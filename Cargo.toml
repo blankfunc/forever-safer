@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
+# default = ["atomic-poll", "seg-queue", "instant-bus"]
 default = []
-atomic-poll = ["seg-queue", "num-bigint"]
 seg-queue = ["crossbeam", "dashmap"]
+atomic-poll = ["seg-queue", "num-bigint"]
+instant-bus = ["atomic-poll"]
 
 [dependencies]
 crossbeam = {version = "0.8.4", optional = true}

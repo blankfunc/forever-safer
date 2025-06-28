@@ -16,11 +16,16 @@
 
 ## Child Projects
 ### SegQueue
-> with feature `seg-queue`
+> with feature `seg-queue`.
 
-**Improvements to `crossbeam::queue::SegQueue`, supporting `peek` and `contains`.**
+Improvements to `crossbeam::queue::SegQueue`, supporting `peek` and `contains`.
 
 ### AtomicPoll
-> with feature `atomic-poll`
+> with feature `atomic-poll`.
 
-**The ID auto increment function that can recycle and reuse IDs.**
+The ID auto increment function that can recycle and reuse IDs.
+
+### InstantBus
+> with feature `instant-bus`.
+
+A broadcast distributor that *sends unilaterally*, *is received by multiple parties*, *discards without receiving*, and *has no historical messages*.
