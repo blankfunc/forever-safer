@@ -58,7 +58,7 @@ fn generate_line_chart(filepath: &str, title: &str, label: &str, data: &[u128]) 
         root.present().unwrap();
     }
 
-	return format!("./{}", filepath.split("/").last().unwrap());
+	return format!("https://raw.githubusercontent.com/dimfunc/forever-safer/benchmarks/images/{}", filepath.split("/").last().unwrap());
 }
 
 fn atomic_poll_test() -> String {
@@ -273,5 +273,5 @@ fn instant_bus_once_test_image(test_counter: usize) -> String {
         })
     ).unwrap();
 
-	return "./instant_bus_once.png".to_owned();
+	return "https://raw.githubusercontent.com/dimfunc/forever-safer/benchmarks/images/instant_bus_once.png".to_owned();
 }
