@@ -3,8 +3,6 @@ use std::{env, fs::OpenOptions, io::Write, sync::Arc, time::{Duration, Instant}}
 use crossbeam::queue;
 use crate::{atomic_poll::AtomicPoll, instant_bus::InstantBus};
 use plotters::prelude::*;
-use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
-use base64::{engine::general_purpose, Engine};
 use ibig::{ubig, UBig};
 use once_cell::sync::Lazy;
 

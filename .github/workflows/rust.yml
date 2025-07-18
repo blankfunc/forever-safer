@@ -19,7 +19,9 @@ jobs:
         sudo apt-get install -y libfontconfig1-dev
     - uses: actions/checkout@v4
     - name: Run tests
-      run: cargo test --features test --release -- --nocapture
+      run: |
+        mkdir -p test
+        cargo test --features test --release -- --nocapture
     - name: Upload Chart Image
       uses: actions/upload-artifact@v4
       with:
