@@ -6,12 +6,6 @@ use flume::{unbounded, Receiver, Sender};
 
 use crate::atomic_poll::AtomicPoll;
 
-#[cfg(test)]
-use std::time::Instant;
-
-#[cfg(test)]
-use crossbeam::queue::SegQueue;
-
 pub struct InstantBus<T>
 where
 	T: Eq + Hash + Clone
@@ -100,72 +94,4 @@ where
 	pub fn is_closed(&self) -> bool {
 		self.closed.load(Ordering::Relaxed)
 	}
-}
-
-#[cfg(test)]
-fn delay_test(test_counter: usize) {
-	let bus = Arc::new(InstantBus::<Instant>::new());
-
-	let counter = Arc::new(std::sync::atomic::AtomicU8::new(0));
-	let timers = Arc::new(SegQueue::<Instant>::new());
-	for _ in 0..test_counter {
-		let timers_clone = timers.clone();
-		let counter_clone = counter.clone();
-		let mut bus_clone = bus.clone().subscribe();
-		std::thread::spawn(move || {
-			counter_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-			let _ = bus_clone.recv().unwrap();
-			let start = Instant::now();
-			bus_clone.recv().unwrap();
-			timers_clone.push(start);
-		});
-	}
-	
-	loop {
-		if counter.load(std::sync::atomic::Ordering::SeqCst) == test_counter.try_into().unwrap() {
-			break;
-		}
-	}
-
-	bus.send(Instant::now());
-
-	let timer = Instant::now();
-	bus.send(timer);
-
-	loop {
-		if timers.len() == test_counter {
-			break;
-		}
-	}
-	
-	let mut times: Vec<u128> = vec![];
-	while !timers.is_empty() {
-		times.push((timer - timers.pop().unwrap()).as_nanos());
-	}
-
-	println!("[{}T_DELAY] DELAY: {}ns / {}",
-		test_counter,
-		times.iter().sum::<u128>() / times.len() as u128,
-		times.iter().map(|time| format!("{}ns", time)).collect::<Vec<_>>().join(" ")
-	);
-}
-
-#[test]
-fn delay_once_test() {
-	delay_test(1);
-}
-
-#[test]
-fn delay_32t_test() {
-	delay_test(32);
-}
-
-#[test]
-fn delay_64t_test() {
-	delay_test(64);
-}
-
-#[test]
-fn delay_128t_test() {
-	delay_test(128);
 }

@@ -4,12 +4,6 @@ use ibig::{ubig, UBig};
 use crate::seg_queue::SegQueue;
 use once_cell::sync::Lazy;
 
-#[cfg(test)]
-use std::time::Instant;
-
-#[cfg(test)]
-use std::time::Duration;
-
 static USIZE_MAX: Lazy<UBig> = Lazy::new(|| UBig::from(usize::MAX));
 static ZERO_UBIG: Lazy<UBig> = Lazy::new(|| ubig!(0));
 static ONE_UBIG: Lazy<UBig> = Lazy::new(|| ubig!(1));
@@ -103,64 +97,4 @@ impl AtomicPoll {
 
 		self.removed.push(id);
 	}
-}
-
-#[test]
-fn increase_100times_test() {
-	let poll = AtomicPoll::new();
-	for _ in 0..2 {
-		poll.increase();
-	}
-
-	let all_timer = Instant::now();
-	let mut times: Vec<Duration> = vec![];
-	for _ in 0..101 {
-		let timer = Instant::now();
-		poll.get_and_increase();
-		times.push(timer.elapsed());
-	}
-
-	println!("[INCREASE_100T] INCREASE: {}ns ({})",
-		all_timer.elapsed().as_nanos(),
-		times.iter().map(|time| format!("{}ns", time.as_nanos())).collect::<Vec<_>>().join(" ")
-	);
-}
-
-#[test]
-fn increase_test() {
-	let poll = AtomicPoll::new();
-
-	let timer = Instant::now();
-	poll.get_and_increase();
-	println!("[INCREASE] INCREASE: {}ns", timer.elapsed().as_nanos());
-}
-
-#[test]
-fn upgrade_test() {
-	let poll = AtomicPoll::new();
-	for i in 0..3 {
-		let timer = Instant::now();
-		poll.get_and_increase();
-		if i == 1 {
-			// trigger upgrade
-			println!("[UPGRADE] INCREASE_AND_UPGRADE: {}ns", timer.elapsed().as_nanos());
-		} else {
-			println!("[UPGRADE] INCREASE: {}ns", timer.elapsed().as_nanos());
-		}
-	}
-}
-
-#[test]
-fn reuse_test() {
-	let poll = AtomicPoll::new();
-	
-	let id = ONE_UBIG.clone();
-
-	let timer = Instant::now();
-	poll.release(id.clone());
-	println!("[REUSE] RELEASE {}: {}ns", id, timer.elapsed().as_nanos());
-
-	let timer = Instant::now();
-	let id = poll.get();
-	println!("[REUSE] REUSE {}: {}ns", id, timer.elapsed().as_nanos());
 }

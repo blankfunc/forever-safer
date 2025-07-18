@@ -6,3 +6,6 @@ pub mod seg_queue;
 
 #[cfg(feature = "instant-bus")]
 pub mod instant_bus;
+
+#[cfg(feature = "test")]
+mod test;
