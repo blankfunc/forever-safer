@@ -11,7 +11,6 @@ test = ["full", "plotters"]
 seg-queue = ["crossbeam", "dashmap", "parking_lot"]
 atomic-poll = ["seg-queue", "ibig", "once_cell", "parking_lot"]
 instant-bus = ["atomic-poll", "flume"]
-image = ["dep:image"]
 
 [dependencies]
 crossbeam = {version = "0.8.4", optional = true }
