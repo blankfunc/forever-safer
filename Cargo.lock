@@ -97,6 +97,7 @@ dependencies = [
  "crossbeam",
  "dashmap",
  "num-bigint",
+ "once_cell",
 ]
 
 [[package]]

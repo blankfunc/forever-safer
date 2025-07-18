@@ -1,11 +1,10 @@
-use std::sync::{Arc, RwLock, atomic::{AtomicU64, Ordering}};
+use std::sync::{Arc, RwLock, atomic::{AtomicUsize, Ordering}};
 use num_bigint::{BigUint, ToBigUint};
 use crate::seg_queue::SegQueue;
+use once_cell::sync::Lazy;
 
-enum PollStore {
-	Quick,
-	Super
-}
+static USIZE_MAX: Lazy<BigUint> = Lazy::new(|| usize::MAX.to_biguint().unwrap());
+static ONE_BIGUINT: Lazy<BigUint> = Lazy::new(|| 1.to_biguint().unwrap());
 
 struct RawAtomicResult {
 	reused: bool,
@@ -13,18 +12,18 @@ struct RawAtomicResult {
 }
 
 pub struct AtomicPoll {
-	store: RwLock<PollStore>,
-	quick_store: Arc<AtomicU64>,
-	super_store: Arc<RwLock<BigUint>>,
+	// usize::MAX Counter
+	counter: Arc<RwLock<BigUint>>,
+	// Atomic Usize
+	store: Arc<AtomicUsize>,
 	removed: SegQueue<BigUint>
 }
 
 impl AtomicPoll {
 	pub fn new() -> Self {
 		Self {
-			store: PollStore::Quick.into(),
-			quick_store: AtomicU64::new(0).into(),
-			super_store: RwLock::new(BigUint::ZERO).into(),
+			counter: RwLock::new(BigUint::ZERO).into(),
+			store: AtomicUsize::new(0).into(),
 			removed: SegQueue::new()
 		}
 	}
@@ -36,41 +35,25 @@ impl AtomicPoll {
 				value
 			};
 		}
-
-		let value = match &*self.store.read().unwrap() {
-			PollStore::Quick => {
-				let uint = self.quick_store.load(Ordering::Acquire);
-				let biguint = uint.to_biguint().unwrap();
-				// Upgrade
-				if uint >= u64::MAX {
-					let mut store_guard = self.store.write().unwrap();
-					if matches!(*store_guard, PollStore::Quick) {
-						*store_guard = PollStore::Super;
-						*self.super_store.write().unwrap() = biguint.clone();
-					}
-				}
-				biguint
-			},
-			PollStore::Super => {
-				self.super_store.read().unwrap().clone()
-			},
-		};
-
+		
+		let store = self.store.load(Ordering::Relaxed).to_biguint().unwrap();
+		let counter = self.counter.read().unwrap().clone();
 		return RawAtomicResult {
 			reused: false,
-			value
+			value: store + &*USIZE_MAX * counter
 		};
 	}
 
 	// The `read` must be used before `increase`
 	fn increase(&self) {
-		match &*self.store.read().unwrap() {
-			PollStore::Quick => {
-				self.quick_store.fetch_add(1, Ordering::AcqRel);
-			},
-			PollStore::Super => {
-				*self.super_store.write().unwrap() += 1.to_biguint().unwrap();
-			},
+		let id = self.store.fetch_add(1, Ordering::Relaxed);
+
+		// need to increase counter
+		if id == usize::MAX {
+			self.store.store(0, Ordering::Relaxed);
+
+			// Add counter
+			*self.counter.write().unwrap() += &*ONE_BIGUINT;
 		}
 	}
 
