@@ -1,6 +1,7 @@
 use crossbeam::queue;
 use dashmap::DashSet;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use parking_lot::RwLock;
 use std::hash::Hash;
 
 pub struct SegQueue<T>
@@ -25,12 +26,12 @@ where
 	}
 
 	fn read_first(&self) -> Option<T> {
-		if let Some(value) = &*self.inner_cache.read().unwrap() {
+		if let Some(value) = &*self.inner_cache.read() {
 			return Some(value.clone());
 		}
 
 		if let Some(value) = &self.inner.pop() {
-			*self.inner_cache.write().unwrap() = Some(value.clone());
+			*self.inner_cache.write() = Some(value.clone());
 			return Some(value.clone());
 		}
 
@@ -48,7 +49,7 @@ where
 			return None;
 		}
 
-		let value = self.inner_cache.write().unwrap().take().unwrap();
+		let value = self.inner_cache.write().take().unwrap();
 		self.inner_set.remove(&value);
 
 		return Some(value);
