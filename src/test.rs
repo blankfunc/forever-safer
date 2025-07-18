@@ -24,14 +24,14 @@ fn all_test() {
 	}
 }
 
-fn generate_line_chart(title: &str, label: &str, data: &[u128]) -> String {
-    let width = 800;
-    let height = 600;
-    let mut buffer = vec![0u8; width * height * 3];
+fn generate_line_chart(filepath: &str, title: &str, label: &str, data: &[u128]) -> String {
+    let width: u32 = 800;
+    let height: u32 = 600;
     {
-        let root =
-			BitMapBackend::with_buffer(&mut buffer, (width as u32, height as u32))
-            .into_drawing_area();
+        // let root =
+		// 	BitMapBackend::with_buffer(&mut buffer, (width as u32, height as u32))
+        //     .into_drawing_area();
+		let root = BitMapBackend::new(filepath, (width, height)).into_drawing_area();
         root.fill(&WHITE).unwrap();
 
         let max_x = data.len();
@@ -60,12 +60,7 @@ fn generate_line_chart(title: &str, label: &str, data: &[u128]) -> String {
         root.present().unwrap();
     }
 
-	let mut png_bytes = vec![];
-	let encoder = PngEncoder::new(&mut png_bytes);
-	encoder.write_image(&buffer, width as u32, height as u32, ColorType::Rgb8.into()).unwrap();
-
-	let base64_string = format!("data:image/png;base64,{}", general_purpose::STANDARD.encode(&png_bytes));
-	return base64_string;
+	return format!("./{}", filepath.split("/").last().unwrap());
 }
 
 fn atomic_poll_test() -> String {
@@ -80,12 +75,18 @@ fn atomic_poll_test() -> String {
 		md.push("### Normal Getting Time".to_string());
 		for i in vec![100, 1000, 10000, 100000] {
 			let result = atomic_poll_increase_test(i);
+			let filepath = format!("test/normal_getting_time_{}.png", i);
 			md.append(&mut vec![
 				format!("**{} Times.**", i),
 				"".to_string(),
 				format!("Total time consumption: {}ns ({}ms).", result.0, result.0 / 1000_000),
 				"".to_string(),
-				format!("![Benchmark]({})", generate_line_chart("AtomicPoll Getting Test", "Time", &result.1)),
+				format!("![Benchmark]({})", generate_line_chart(
+					&filepath,
+					"AtomicPoll Getting Test",
+					"Time",
+					&result.1
+				)),
 				"".to_string()
 			]);
 		}
@@ -101,10 +102,11 @@ fn atomic_poll_test() -> String {
 		}
 
 		let total = results.iter().sum::<u128>();
+		let filepath = format!("test/usize_exceeding_correction_time_{}.png", times);
 		md.append(&mut vec![
 			format!("The average time spent in **{} tests** is: {}ns ({}ms).", times, total, total / 1000_000),
 			"".to_string(),
-			format!("![Benchmark]({})", generate_line_chart("USize Exceeding Correction Test", "Time", &results)),
+			format!("![Benchmark]({})", generate_line_chart(&filepath, "USize Exceeding Correction Test", "Time", &results)),
 			"".to_string()
 		]);
 	}
@@ -121,20 +123,22 @@ fn atomic_poll_test() -> String {
 		}
 
 		let total1 = results1.iter().sum::<u128>();
+		let filepath = format!("test/id_recycling_and_reuse_time_release_{}.png", times);
 		md.append(&mut vec![
 			"**Child Benchmark** Release ID Time.\n".to_string(),
 			format!("The average time spent in **{} tests** is: {}ns ({}ms).", times, total1, total1 / 1000_000),
 			"".to_string(),
-			format!("![Benchmark]({})", generate_line_chart("ID Recycling and Reuse Test (Release)", "Time", &results1)),
+			format!("![Benchmark]({})", generate_line_chart(&filepath, "ID Recycling and Reuse Test (Release)", "Time", &results1)),
 			"".to_string()
 		]);
 
 		let total2 = results2.iter().sum::<u128>();
+		let filepath = format!("test/id_recycling_and_reuse_time_reuse_{}.png", times);
 		md.append(&mut vec![
 			"**Child Benchmark** Reuse ID Time.\n".to_string(),
 			format!("The average time spent in **{} tests** is: {}ns ({}ms).", times, total2, total2 / 1000_000),
 			"".to_string(),
-			format!("![Benchmark]({})", generate_line_chart("ID Recycling and Reuse Test (Reuse)", "Time", &results2)),
+			format!("![Benchmark]({})", generate_line_chart(&filepath, "ID Recycling and Reuse Test (Reuse)", "Time", &results2)),
 			"".to_string()
 		]);
 	}
@@ -245,13 +249,10 @@ fn instant_bus_once_test_image(test_counter: usize) -> String {
 		times.push((timer - timers.pop().unwrap()).as_nanos());
 	}
 
-	let width = 800;
-    let height = 600;
-    let mut buffer = vec![0u8; width * height * 3];
-
-	let root =
-		BitMapBackend::with_buffer(&mut buffer, (width as u32, height as u32))
-		.into_drawing_area();
+	let width: u32 = 800;
+    let height: u32 = 600;
+	
+	let root = BitMapBackend::new("test/instant_bus_once.png", (width, height)).into_drawing_area();
 	root.fill(&WHITE).unwrap();
 	let y_max = times.iter().cloned().max().unwrap_or(0);
 	let mut chart = ChartBuilder::on(&root)
@@ -274,13 +275,5 @@ fn instant_bus_once_test_image(test_counter: usize) -> String {
         })
     ).unwrap();
 
-	drop(chart);
-	drop(root);
-
-	let mut png_bytes = vec![];
-	let encoder = PngEncoder::new(&mut png_bytes);
-	encoder.write_image(&buffer, width as u32, height as u32, ColorType::Rgb8.into()).unwrap();
-
-	let base64_string = format!("data:image/png;base64,{}", general_purpose::STANDARD.encode(&png_bytes));
-	return base64_string;
+	return "./instant_bus_once.png".to_owned();
 }
