@@ -1,5 +1,5 @@
 #![cfg(test)]
-use std::{env, fs::OpenOptions, io::Write, sync::Arc, time::{Duration, Instant}};
+use std::{env, fs::{self, OpenOptions}, io::Write, sync::Arc, time::{Duration, Instant}};
 use crossbeam::queue;
 use crate::{atomic_poll::AtomicPoll, instant_bus::InstantBus};
 use plotters::prelude::*;
@@ -20,6 +20,8 @@ fn all_test() {
 		let mut file = OpenOptions::new().write(true).append(false).open(path).unwrap();
 		writeln!(file, "{}", content).unwrap();
 	}
+
+	fs::write("README.md", content).unwrap();
 }
 
 fn generate_line_chart(filepath: &str, title: &str, label: &str, data: &[u128]) -> String {

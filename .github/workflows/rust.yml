@@ -30,5 +30,6 @@ jobs:
         mkdir -p images
         cp test/*.png images/
         git add images/*.png
+        git add README.md
         git commit -m "Set benchmark result image"
         git push -f origin benchmarks
