@@ -252,7 +252,8 @@ fn instant_bus_once_test_image(test_counter: usize) -> String {
 	let width: u32 = 800;
     let height: u32 = 600;
 	
-	let root = BitMapBackend::new("test/instant_bus_once.png", (width, height)).into_drawing_area();
+	let filepath = format!("test/instant_bus_{}.png", test_counter);
+	let root = BitMapBackend::new(&filepath, (width, height)).into_drawing_area();
 	root.fill(&WHITE).unwrap();
 	let y_max = times.iter().cloned().max().unwrap_or(0);
 	let mut chart = ChartBuilder::on(&root)
@@ -275,5 +276,5 @@ fn instant_bus_once_test_image(test_counter: usize) -> String {
         })
     ).unwrap();
 
-	return "https://raw.githubusercontent.com/dimfunc/forever-safer/benchmarks/images/instant_bus_once.png".to_owned();
+	return format!("https://raw.githubusercontent.com/dimfunc/forever-safer/benchmarks/images/{}", filepath.split("/").last().unwrap());
 }
