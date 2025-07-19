@@ -58,9 +58,6 @@ impl AtomicPoll {
 
 		// need to increase counter
 		if id == usize::MAX - 1 {
-			#[cfg(test)]
-			println!("TRIG UPGRADE!");
-
 			self.store.store(0, Ordering::SeqCst);
 
 			// Add counter and result

@@ -6,7 +6,7 @@ edition = "2024"
 [features]
 default = ["full", "test"]
 full = ["atomic-poll", "seg-queue", "instant-bus"]
-test = ["full", "plotters"]
+test = ["full", "plotters", "rand", "rust_decimal"]
 # default = []
 seg-queue = ["crossbeam", "dashmap", "parking_lot"]
 atomic-poll = ["seg-queue", "ibig", "once_cell", "parking_lot"]
@@ -22,3 +22,5 @@ parking_lot = { version = "0.12.4", optional = true }
 thiserror = "2.0.12"
 # For test
 plotters = { version = "0.3.7", optional = true }
+rand = { version = "0.9.1", optional = true }
+rust_decimal = { version = "1.37.2", optional = true }
