@@ -1,7 +1,7 @@
 #![cfg(test)]
 use once_cell::sync::Lazy;
 // use ibig::{ubig, UBig};
-use std::{env, fs::OpenOptions, io::Write};
+use std::{env, fs::{self, OpenOptions}, io::Write};
 
 // pub static ONE_UBIG: Lazy<UBig> = Lazy::new(|| ubig!(1));
 
@@ -32,5 +32,8 @@ fn all_test() {
 	let mut file = OpenOptions::new().write(true).append(false).open(path).unwrap();
 	writeln!(file, "{}", content).unwrap();
 
-	// fs::write("README.md", content).unwrap();
+	if SUMMARY.is_some() {
+		fs::write("README.md", content).unwrap();
+	}
+	
 }
