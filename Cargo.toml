@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["full", "test"]
+default = ["full"]
 full = ["atomic-poll", "seg-queue", "instant-bus"]
 test = ["full", "plotters", "rand", "rust_decimal"]
 # default = []
